@@ -1,0 +1,10 @@
+## .NET
+bin/
+obj/
+release/
+publish/
+*.user
+*.suo
+*.cache
+*.log
+*.vs/

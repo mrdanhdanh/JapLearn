@@ -1,0 +1,90 @@
+@page "/learn-kanji"
+@inject KanjiService KanjiService
+@implements IDisposable
+
+<PageTitle>Học Kanji</PageTitle>
+
+<div class="word-container">
+    <h1>Học Kanji N5</h1>
+
+    <div class="word-display">
+        <span class="kanji-char">@currentKanji.Kanji</span>
+    </div>
+
+    <div class="quiz-options">
+        @foreach (var option in options)
+        {
+            <button @onclick="() => SelectAnswer(option)"
+                    class="quiz-option @(selectedAnswer != null ? GetOptionClass(option) : "")"
+                    disabled="@(selectedAnswer != null)">
+                <span class="option-hiragana">@option.Hiragana</span>
+                <span class="option-meaning">@option.Meaning</span>
+            </button>
+        }
+    </div>
+
+    @if (selectedAnswer != null)
+    {
+        <div class="feedback @(isCorrect ? "correct" : "wrong")">
+            @(isCorrect ? "Chính xác! " : "Sai rồi! ")
+            "@currentKanji.Kanji" = @currentKanji.Hiragana - @currentKanji.Meaning
+        </div>
+        <div class="timer-bar">
+            <div class="timer-fill" style="animation: timerShrink @(timerSeconds)s linear forwards;"></div>
+        </div>
+    }
+</div>
+
+@code {
+    private KanjiWord currentKanji = new();
+    private List<KanjiWord> options = new();
+    private KanjiWord? selectedAnswer;
+    private bool isCorrect;
+    private System.Timers.Timer? timer;
+    private const int timerSeconds = 5;
+
+    protected override void OnInitialized()
+    {
+        LoadQuiz();
+    }
+
+    private void LoadQuiz()
+    {
+        timer?.Dispose();
+        timer = null;
+        selectedAnswer = null;
+        var result = KanjiService.GetQuizOptions();
+        currentKanji = result.correct;
+        options = result.options;
+    }
+
+    private void SelectAnswer(KanjiWord option)
+    {
+        selectedAnswer = option;
+        isCorrect = option.Kanji == currentKanji.Kanji;
+
+        timer = new System.Timers.Timer(timerSeconds * 1000);
+        timer.AutoReset = false;
+        timer.Elapsed += (_, _) =>
+        {
+            InvokeAsync(() =>
+            {
+                LoadQuiz();
+                StateHasChanged();
+            });
+        };
+        timer.Start();
+    }
+
+    private string GetOptionClass(KanjiWord option)
+    {
+        if (option.Kanji == currentKanji.Kanji) return "correct";
+        if (option == selectedAnswer) return "wrong";
+        return "dimmed";
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}

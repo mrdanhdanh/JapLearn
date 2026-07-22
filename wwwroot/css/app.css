@@ -1,0 +1,242 @@
+.kana-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.kana-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.kana-char {
+    font-size: 8rem;
+    line-height: 1;
+}
+
+.kana-type {
+    font-size: 1.2rem;
+    color: #888;
+}
+
+.word-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.word-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.word-char {
+    font-size: 5rem;
+    line-height: 1;
+    font-weight: bold;
+}
+
+.word-type {
+    font-size: 1.5rem;
+    color: #888;
+}
+
+.word-meaning {
+    font-size: 1.5rem;
+    color: #555;
+}
+
+.input-area {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.input-area input {
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    width: 250px;
+}
+
+.feedback {
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.feedback.correct {
+    background: #d4edda;
+    color: #155724;
+}
+
+.feedback.wrong {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.filter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    padding: 0.3rem 0.8rem;
+    border: 2px solid #ddd;
+    border-radius: 20px;
+    background: white;
+    transition: all 0.2s;
+}
+
+.filter-item:hover {
+    border-color: #007bff;
+}
+
+.filter-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #007bff;
+}
+
+.filter-item input[type="checkbox"]:checked + span {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.filter-item:has(input[type="checkbox"]:checked) {
+    background: #e7f1ff;
+    border-color: #007bff;
+}
+
+.stats {
+    display: flex;
+    gap: 2rem;
+    font-size: 1rem;
+    color: #666;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary { background: #007bff; color: white; }
+.btn-secondary { background: #6c757d; color: white; }
+.btn-success { background: #28a745; color: white; }
+.btn-primary:hover { background: #0056b3; }
+.btn-secondary:hover { background: #5a6268; }
+.btn-success:hover { background: #218838; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    max-width: 600px;
+}
+
+.quiz-option {
+    font-size: 1.3rem;
+    padding: 1rem;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quiz-option:not(:disabled):hover {
+    border-color: #007bff;
+    background: #f0f6ff;
+}
+
+.quiz-option.correct {
+    border-color: #28a745;
+    background: #d4edda;
+    color: #155724;
+    font-weight: bold;
+}
+
+.quiz-option.wrong {
+    border-color: #dc3545;
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.quiz-option.dimmed {
+    opacity: 0.5;
+}
+
+.quiz-option .option-hiragana {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 0.2rem;
+}
+
+.quiz-option .option-meaning {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.kanji-char {
+    font-size: 8rem;
+    line-height: 1;
+    font-weight: bold;
+}
+
+.timer-bar {
+    width: 100%;
+    max-width: 400px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.timer-fill {
+    height: 100%;
+    width: 100%;
+    background: #28a745;
+    border-radius: 4px;
+}
+
+.timer-fill.wrong {
+    background: #dc3545;
+}
+
+@keyframes timerShrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+.page-layout { min-height: 100vh; }
+
+@media (max-width: 500px) {
+    .quiz-options {
+        grid-template-columns: 1fr;
+    }
+}

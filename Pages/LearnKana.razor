@@ -1,0 +1,114 @@
+@page "/learn-kana"
+@inject KanaService KanaService
+
+<PageTitle>Học bảng chữ cái</PageTitle>
+
+<div class="kana-container">
+    <h1>Học bảng chữ cái tiếng Nhật</h1>
+
+    <div class="filter">
+        <button @onclick="SetAll" class="@GetBtnClass(null)">Tất cả</button>
+        <button @onclick="SetHiragana" class="@GetBtnClass("Hiragana")">Hiragana</button>
+        <button @onclick="SetKatakana" class="@GetBtnClass("Katakana")">Katakana</button>
+    </div>
+
+    <div class="kana-display">
+        <span class="kana-char">@currentKana.Character</span>
+        <span class="kana-type">(@currentKana.Type)</span>
+    </div>
+
+    <div class="input-area">
+        <input @bind="userInput"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               placeholder="Nhập phiên âm (romaji)..."
+               disabled="@isCorrect"
+               autofocus />
+        <button @onclick="CheckAnswer" class="btn btn-success" disabled="@isCorrect">Kiểm tra</button>
+        <button @onclick="NextKana" class="btn btn-secondary" disabled="@isCorrect">Bỏ qua</button>
+    </div>
+
+    @if (feedback != null)
+    {
+        <div class="feedback @(isCorrect ? "correct" : "wrong")">
+            @feedback
+        </div>
+    }
+
+    @if (isCorrect)
+    {
+        <button @onclick="NextKana" class="btn btn-primary">Tiếp theo</button>
+    }
+
+    <div class="stats">
+        <span>Đúng: @correctCount</span>
+        <span>Sai: @wrongCount</span>
+    </div>
+</div>
+
+@code {
+    private Kana currentKana = new();
+    private string? selectedFilter;
+    private string? userInput;
+    private string? feedback;
+    private bool isCorrect;
+    private int correctCount;
+    private int wrongCount;
+
+    protected override void OnInitialized()
+    {
+        NextKana();
+    }
+
+    private void SetAll() => SetFilter(null);
+    private void SetHiragana() => SetFilter("Hiragana");
+    private void SetKatakana() => SetFilter("Katakana");
+
+    private void SetFilter(string? type)
+    {
+        selectedFilter = type;
+        NextKana();
+    }
+
+    private string GetBtnClass(string? type) => selectedFilter == type ? "btn btn-primary" : "btn btn-secondary";
+
+    private void NextKana()
+    {
+        currentKana = KanaService.GetRandomKana(selectedFilter);
+        userInput = "";
+        feedback = null;
+        isCorrect = false;
+    }
+
+    private void CheckAnswer()
+    {
+        if (string.IsNullOrWhiteSpace(userInput)) return;
+
+        if (string.Equals(userInput.Trim().ToLower(), currentKana.Romaji, StringComparison.OrdinalIgnoreCase))
+        {
+            feedback = $"Chính xác! \"{currentKana.Character}\" đọc là \"{currentKana.Romaji}\"";
+            isCorrect = true;
+            correctCount++;
+        }
+        else
+        {
+            feedback = $"Sai rồi! \"{currentKana.Character}\" đọc là \"{currentKana.Romaji}\", không phải \"{userInput}\"";
+            wrongCount++;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (isCorrect)
+            {
+                NextKana();
+            }
+            else
+            {
+                CheckAnswer();
+            }
+        }
+    }
+}

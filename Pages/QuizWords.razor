@@ -1,0 +1,110 @@
+@page "/quiz-words"
+@inject WordService WordService
+@implements IDisposable
+
+<PageTitle>Trắc nghiệm từ vựng</PageTitle>
+
+<div class="word-container">
+    <h1>Trắc nghiệm từ vựng tiếng Nhật</h1>
+
+    <div class="filter">
+        <button @onclick="SetAll" class="@GetBtnClass(null)">Tất cả</button>
+        @foreach (var type in wordTypes)
+        {
+            <button @onclick="() => SetFilter(type)" class="@GetBtnClass(type)">@type</button>
+        }
+    </div>
+
+    <div class="word-display">
+        <span class="word-char">@currentWord.Word</span>
+        <span class="word-type">(@currentWord.Type)</span>
+    </div>
+
+    <div class="quiz-options">
+        @foreach (var option in options)
+        {
+            <button @onclick="() => SelectAnswer(option)"
+                    class="quiz-option @(selectedAnswer != null ? GetOptionClass(option) : "")"
+                    disabled="@(selectedAnswer != null)">
+                @option.Meaning
+            </button>
+        }
+    </div>
+
+    @if (selectedAnswer != null)
+    {
+        <div class="feedback @(isCorrect ? "correct" : "wrong")">
+            @(isCorrect ? "Chính xác! " : "Sai rồi! ")
+            " @currentWord.Word " = @currentWord.Meaning (@currentWord.Romaji)
+        </div>
+        <div class="timer-bar">
+            <div class="timer-fill" style="animation: timerShrink @(timerSeconds)s linear forwards;"></div>
+        </div>
+    }
+</div>
+
+@code {
+    private JapaneseWord currentWord = new();
+    private List<JapaneseWord> options = new();
+    private string? selectedFilter;
+    private JapaneseWord? selectedAnswer;
+    private bool isCorrect;
+    private List<string> wordTypes = new();
+    private System.Timers.Timer? timer;
+    private const int timerSeconds = 5;
+
+    protected override void OnInitialized()
+    {
+        wordTypes = WordService.GetTypes();
+        LoadQuiz();
+    }
+
+    private void SetAll() => SetFilter(null);
+    private void SetFilter(string? type)
+    {
+        selectedFilter = type;
+        LoadQuiz();
+    }
+
+    private string GetBtnClass(string? type) => selectedFilter == type ? "btn btn-primary" : "btn btn-secondary";
+
+    private void LoadQuiz()
+    {
+        timer?.Dispose();
+        timer = null;
+        selectedAnswer = null;
+        var result = WordService.GetQuizOptions(selectedFilter);
+        currentWord = result.correct;
+        options = result.options;
+    }
+
+    private void SelectAnswer(JapaneseWord option)
+    {
+        selectedAnswer = option;
+        isCorrect = option.Word == currentWord.Word;
+
+        timer = new System.Timers.Timer(timerSeconds * 1000);
+        timer.AutoReset = false;
+        timer.Elapsed += (_, _) =>
+        {
+            InvokeAsync(() =>
+            {
+                LoadQuiz();
+                StateHasChanged();
+            });
+        };
+        timer.Start();
+    }
+
+    private string GetOptionClass(JapaneseWord option)
+    {
+        if (option.Word == currentWord.Word) return "correct";
+        if (option == selectedAnswer) return "wrong";
+        return "dimmed";
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+}

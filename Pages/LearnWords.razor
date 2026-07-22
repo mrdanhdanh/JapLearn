@@ -1,0 +1,116 @@
+@page "/learn-words"
+@inject WordService WordService
+
+<PageTitle>Học từ vựng</PageTitle>
+
+<div class="word-container">
+    <h1>Học từ vựng tiếng Nhật</h1>
+
+    <div class="filter">
+        <button @onclick="SetAll" class="@GetBtnClass(null)">Tất cả</button>
+        @foreach (var type in wordTypes)
+        {
+            <button @onclick="() => SetFilter(type)" class="@GetBtnClass(type)">@type</button>
+        }
+    </div>
+
+    <div class="word-display">
+        <span class="word-char">@currentWord.Word</span>
+        <span class="word-type">(@currentWord.Type)</span>
+        <span class="word-meaning">@currentWord.Meaning</span>
+    </div>
+
+    <div class="input-area">
+        <input @bind="userInput"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               placeholder="Nhập phiên âm (romaji)..."
+               disabled="@isCorrect"
+               autofocus />
+        <button @onclick="CheckAnswer" class="btn btn-success" disabled="@isCorrect">Kiểm tra</button>
+        <button @onclick="NextWord" class="btn btn-secondary" disabled="@isCorrect">Bỏ qua</button>
+    </div>
+
+    @if (feedback != null)
+    {
+        <div class="feedback @(isCorrect ? "correct" : "wrong")">
+            @feedback
+        </div>
+    }
+
+    @if (isCorrect)
+    {
+        <button @onclick="NextWord" class="btn btn-primary">Tiếp theo</button>
+    }
+
+    <div class="stats">
+        <span>Đúng: @correctCount</span>
+        <span>Sai: @wrongCount</span>
+    </div>
+</div>
+
+@code {
+    private JapaneseWord currentWord = new();
+    private string? selectedFilter;
+    private string? userInput;
+    private string? feedback;
+    private bool isCorrect;
+    private int correctCount;
+    private int wrongCount;
+    private List<string> wordTypes = new();
+
+    protected override void OnInitialized()
+    {
+        wordTypes = WordService.GetTypes();
+        NextWord();
+    }
+
+    private void SetAll() => SetFilter(null);
+    private void SetFilter(string? type)
+    {
+        selectedFilter = type;
+        NextWord();
+    }
+
+    private string GetBtnClass(string? type) => selectedFilter == type ? "btn btn-primary" : "btn btn-secondary";
+
+    private void NextWord()
+    {
+        currentWord = WordService.GetRandomWord(selectedFilter);
+        userInput = "";
+        feedback = null;
+        isCorrect = false;
+    }
+
+    private void CheckAnswer()
+    {
+        if (string.IsNullOrWhiteSpace(userInput)) return;
+
+        if (string.Equals(userInput.Trim().ToLower(), currentWord.Romaji, StringComparison.OrdinalIgnoreCase))
+        {
+            feedback = $"Chính xác! \"{currentWord.Word}\" đọc là \"{currentWord.Romaji}\" - {currentWord.Meaning}";
+            isCorrect = true;
+            correctCount++;
+        }
+        else
+        {
+            feedback = $"Sai rồi! \"{currentWord.Word}\" đọc là \"{currentWord.Romaji}\" ({currentWord.Meaning}), không phải \"{userInput}\"";
+            wrongCount++;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (isCorrect)
+            {
+                NextWord();
+            }
+            else
+            {
+                CheckAnswer();
+            }
+        }
+    }
+}
